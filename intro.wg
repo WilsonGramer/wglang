@@ -1,0 +1,281 @@
+// # Wilsonian Programming Language (Concept)
+
+// ## Grammar
+
+// ### Comments
+
+// #### Single Line Comments
+
+// My comment here
+
+
+// #### Multi Line Comments
+
+///
+My multi
+line comment
+here
+///
+
+
+// #### Inline Comments
+
+print(3 + /~ 4 ~/ 7)
+
+
+// #### Documentation Comments
+
+//:
+Description - Lorem ipsum dolor sit amet
+Author - Wilson Gramer
+Arguments - {
+    arg1: bool - Does something.
+    arg2: string - Does something else.
+}
+://
+
+
+// #### Annotation Comments (in supported IDEs)
+
+
+//- todo
+//- fixme
+
+// For use in Git:
+//- blame @wgramer03
+
+
+// You can also use hashtags for custom names:
+//- #whyDoesThisCodeNotWork
+//- #iLoveTheWilsonianProgrammingLanguage
+
+
+// #### Section Comments (Creates a separator line in supported IDEs)
+
+// ---
+
+
+// --- You could also provide a section title here.
+
+
+// ### Variables and Constants
+
+var myName: string = "Wilson" // Creates a mutable, statically-typed object. The type must always be specified
+myName = "Joe" // Can reassign the value
+myName = 5 // Error (Cannot reassign the type)
+myName = null // Error (Cannot make non-nullable object null)
+
+nullable var maybeMyName: string = "Wilson" // Creates a mutable, statically-typed object that can also be null
+maybeMyName = null // This is allowed
+
+dynamic var myDynamicVariable = 43 // Creates a mutable, dynamically-typed object that can also be null. The type is never specified
+myDynamicVariable = 5 // Can reassign the value
+myDynamicVariable = true // Can reassign the type
+myDynamicVariable = null // This is allowed
+
+const myConstantVariable: bool = true // Creates a immutable, statically-typed object
+myConstantVariable = false // Error (cannot mutate an immutable object)
+override const myConstantVariable: bool = false // Overriding a const is allowed
+
+// ### Built-in Types
+
+null // No value.
+void // An empty tuple.
+any // A dynamic type.
+bool // `true` or `false`.
+byte // A byte of raw data.
+data(length) // Raw data, with the length measured in bytes.
+char // A unicode character.
+string // A string of text, can include unicode characters. This is really just a collection of characters (`char`s).
+int // A 64-bit integer.
+double // A 64-bit floating-point number.
+list(type) // A list of the specified type.
+set(type) // A set of the specified type.
+dict(keyType : valueType) // A dictionary of the key and value types.
+promise(type) // A promise of the specified type.
+error(info) // An error with the specified object.
+
+
+// ### Functions
+
+// Declaring a void function without arguments
+function printHello() {
+    print("Hello!")
+}
+// Calling the function
+printHello() // "Hello!"
+
+// Declaring a void function with arguments
+function sayHello(to name: string) {
+    print("Hello, ^(name)!")
+}
+// Calling the function
+sayHello(to "Wilson") // "Hello, Wilson!"
+// Alternatively...
+sayHello(name = "Wilson") // "Hello, Wilson!"
+
+// Delcaring a function without argument names
+function addAndPrint(int, int) {
+    print("^($0) + ^($1) = ^($0 + $1)")
+}
+addAndPrint(3, 4) // "3 + 4 = 7"
+
+// You could also do it like this...
+override function addAndPrint(_ firstNumber: int, _ secondNumber: int) {
+    print("^(firstNumber) + ^(secondNumber) = ^(firstNumber + secondNumber)")
+}
+addAndPrint(3, 4)
+
+// Declaring a function that returns a value
+// (You can also mix named and unnamed argument names)
+function add(_ firstNumber: int, to secondNumber: int) returns int {
+    return firstNumber + secondNumber
+}
+add(3, to 4) // 7
+// Alternatively...
+add(firstNumber = 3, secondNumber = 4) // 7
+
+
+// ### Error Handling
+
+// A (void) function that throws a value
+function myThrowingFunction() throws string {
+    throw "Oops"
+}
+
+// A function that returns or throws a value
+function doSomething(with number: int) returns string, throws string {
+    if number.isOdd then return "Woo-hoo!", else throw "I hate even numbers!"
+}
+
+// Calling the functions
+try myThrowingFunction(), catch {
+    print("Error: ^(error.info)") // `error` implicitly refers to the error returned by the function, if any
+} // "Error: Oops"
+try doSomething(with 5), catch {
+    print("This will never be called")
+} // "Woo-hoo!"
+try doSomething(with 6), catch {
+    print("Error: ^(error.info)")
+} // "Error: I hate even numbers!"
+
+// Errors have several useful properties, including:
+error.info // The value thrown
+error.stacktrace // The stacktrace
+error.file // The file it was thrown in
+error.func // The function it was thrown in
+error.line // The line number it was thrown on
+error.time // The time the error was thrown at
+
+// ### Promises
+
+async function eventuallyReturnHello() returns string {
+    sleep(1000) // Wait 1 second
+    return "Hello!"
+}
+eventuallyReturnHello(), then {
+    print(result) // `result` implicitly refers to the value returned by the function, if any
+}, catch {
+    print(error) // This will never be called because we never threw an error
+} // "Hello!"
+// Alternatively...
+async {
+    const myResult = (await eventuallyReturnHello())
+    print(myResult)
+}
+
+// Promise that throws an error (async functions are automatically throwable)
+async function neverReturnHello() returns string {
+    sleep(1000)
+    throw "Oops"
+}
+neverReturnHello(), then {
+    print("This will never be called")
+}, catch {
+    print("An error occured: ^(error.info)")
+} // "An error occured: Oops"
+
+
+// ### Control Flow
+
+// --- Booleans
+function doILikeTheNumber(int) returns bool {
+    return ($0 is 42)
+}
+doILikeTheNumber(85) // false
+doILikeTheNumber(42) // true
+
+// Inverting a boolean
+not doILikeTheNumber(42) // false
+
+// --- If statements
+function sayHello(to name: string) {
+    if name is "Wilson" {
+        print("Greetings, the almighty developer Wilson!")
+    }, else {
+        print("Hi there, ^(name).")
+    }
+}
+sayHello(to "Bob") // "Hi there, Bob."
+sayHello(to "Wilson") // "Greetings, the almighty developer Wilson!"
+
+// Shorter version (this should generally be used only for one-line bodies) 
+override function sayHello(to name: string) {
+    if name is "Wilson" then print("Greetings, the almighty developer Wilson!"), else print("Hi there, ^(name).")
+}
+
+// --- Switch statements
+function getStringForErrorCode(_ code: int) returns string {
+    switch code {
+        200 {
+            return "ok"
+        },
+        404 {
+            return "not found"
+        },
+        500 {
+            return "server error"
+        },
+        default {
+            return "unknown code"
+        }
+    }
+}
+
+
+// ### Structures
+
+// In the Wilsonian Programming Language, *structures* are the main way to store data and program logic.
+@json struct Book { // Ignore the @json for now, it's not required but we'll use it in an example
+    var title: string
+    var author: string
+    var numberOfPages: int
+    var isRead: bool = false
+
+    function read() {
+        self.isRead = true
+    }
+}
+
+// Initialize an instance of Book.
+// Notice that we don't need to include isRead, because its default value has already been provided by the structure.
+var book = new Book {
+    title = "The River"
+    author = "Wilson Gramer"
+    numberOfPages = 41
+}
+print("\"^(book.title)\" by ^(book.author)") // ""The River" by Wilson Gramer"
+
+// ---
+
+// You can make structures tagged with @json interoperable with JSON (dict), as long as the struct's values are also JSON-compatible. Functions are ignored when converting.
+const bookJSON: dict(string, any) = {
+    "title": "The River",
+    "author": "Wilson Gramer",
+    "number_of_pages": 41 // camel-case and snake-case are automatically converted!
+}
+const bookFromJSON = Book from bookJSON
+print("\"^(book.title)\" by ^(book.author)") // ""The River" by Wilson Gramer"
+
+const jsonFromBook = dict(string, any) from book
+print(jsonFromBook.jsonString()) // { "author": "Wilson Gramer", "number_of_pages": 41, "title": "The River" }
